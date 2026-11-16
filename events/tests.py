@@ -7,7 +7,7 @@ from .security import client_ip
 
 class SecurityHeadersTests(TestCase):
     def test_headers(self):
-        response = self.client.get("/robots.txt")
+        response = self.client.get("/robots.txt", secure=True)
         self.assertIn("default-src 'none'", response["Content-Security-Policy"])
         self.assertIn("frame-ancestors 'none'", response["Content-Security-Policy"])
         self.assertEqual(response["X-Frame-Options"], "DENY")
@@ -23,13 +23,15 @@ class AdminTests(TestCase):
         url = reverse("admin:login")
         attempt = {"username": "nobody", "password": "wrong"}
         for _ in range(5):
-            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.7")
+            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.7", secure=True)
         self.assertEqual(
-            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.7").status_code, 429
+            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.7", secure=True).status_code,
+            429,
         )
         # Another visitor is not affected.
         self.assertEqual(
-            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.8").status_code, 200
+            self.client.post(url, attempt, HTTP_X_REAL_IP="203.0.113.8", secure=True).status_code,
+            200,
         )
 
 
@@ -42,6 +44,6 @@ class ClientIpTests(TestCase):
 
 class RobotsTests(TestCase):
     def test_robots_txt(self):
-        response = self.client.get("/robots.txt")
+        response = self.client.get("/robots.txt", secure=True)
         self.assertEqual(response["Content-Type"], "text/plain")
         self.assertNotContains(response, settings.ADMIN_URL)
