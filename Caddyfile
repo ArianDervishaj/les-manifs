@@ -1,0 +1,33 @@
+{
+	servers {
+		# gunicorn has only 3 workers: don't let slow clients hold them.
+		timeouts {
+			read_header 10s
+			read_body 10s
+			write 30s
+			idle 2m
+		}
+	}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	request_body {
+		max_size 1MB
+	}
+
+	header {
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+		-Server
+	}
+
+	reverse_proxy web:8000 {
+		# Overwrites any X-Real-IP sent by the client (see events/security.py).
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}
