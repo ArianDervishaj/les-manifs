@@ -4,11 +4,25 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      pip:
+        patterns: ["*"]
+    ignore:
+      # Stay on the 5.2 LTS and only take its patch releases.
+      - dependency-name: django
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Changing Python version also means changing CI, so it's done by hand.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
